@@ -29,6 +29,7 @@ parser = optparse.OptionParser(
         
 parser.add_option("--flavor",   type=str,   help="arc/flat/science", default='science')
 parser.add_option("--tileid",   type=int,   help="tile id")
+parser.add_option("--objtype",   type=str,   help="LRG/ELG/QSO", default=None)
 parser.add_option("--expid",    type=int,   help="exposure id")
 parser.add_option("--exptime",  type=int,   help="exposure time in seconds")
 parser.add_option("--night",    type=str,   help="YEARMMDD")
@@ -51,7 +52,7 @@ if not envOK:
 #- Initialize tileid
 if opts.tileid is None:
     opts.tileid = obs.get_next_tileid()
-
+    
 if opts.expid is None:
     opts.expid = obs.get_next_expid()
 
@@ -75,7 +76,7 @@ random.seed(opts.randseed)
 np.random.seed(opts.randseed)
 
 #- Generate the new exposure
-obs.new_exposure(opts.flavor, nspec=opts.nspec, \
+obs.new_exposure(opts.flavor, nspec=opts.nspec, object_type=opts.objtype, \
     night=opts.night, expid=opts.expid,         \
     tileid=opts.tileid, airmass=opts.airmass, exptime=opts.exptime)
 
