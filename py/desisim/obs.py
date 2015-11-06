@@ -16,7 +16,7 @@ from desispec.interpolation import resample_flux
 from targets import get_targets
 from . import io
 
-def new_exposure(flavor, nspec=5000, object_type='LRG', night=None, expid=None, \
+def new_exposure(flavor, nspec=5000, object_type=None, night=None, expid=None, \
     tileid=None, airmass=1.0, exptime=None):
     """
     Create a new exposure and output input simulation files.
