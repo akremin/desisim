@@ -16,7 +16,7 @@ from desispec.io.fibermap import empty_fibermap
 
 from desisim import io
 
-def sample_objtype(nobj,objtype):
+def sample_objtype(nobj,objtype=None):
     """
     Return a random sampling of object types (ELG, LRG, QSO, STD, BAD_QSO)
     
@@ -58,14 +58,22 @@ def sample_objtype(nobj,objtype):
     #- Number of science fibers available
     nsci = nobj - (nsky+nstd)
     
-    #- LRGs ELGs QSOs
-    nqso = np.random.poisson(nsci * (tgt['nobs_qso'] + tgt['nobs_lya']) / ntgt)
-    nqso_bad = np.random.poisson(nsci * (tgt['ntarget_badqso']) / ntgt)
-
-    assert(nsci == (nqso+nqso_bad)
     true_objtype  = ['SKY']*nsky + ['STD']*nstd
-    if objtype == 'QSO':
+    
+    if not objtype:
+        #- LRGs ELGs QSOs
+    -   nlrg = np.random.poisson(nsci * tgt['nobs_lrg'] / ntgt)
+        nqso = np.random.poisson(nsci * (tgt['nobs_qso'] + tgt['nobs_lya']) / ntgt)
+        nqso_bad = np.random.poisson(nsci * (tgt['ntarget_badqso']) / ntgt)
+    -   nelg = nobj - (nlrg+nqso+nqso_bad+nsky+nstd)
+        true_objtype += ['LRG']*nlrg
+    -   true_objtype += ['ELG']*nelg
         true_objtype += ['QSO']*nqso + ['QSO_BAD']*nqso_bad
++   elif objtype == 'QSO':
+        nqso = np.random.poisson(nsci * (tgt['nobs_qso'] + tgt['nobs_lya']) / ntgt)
+        nqso_bad = np.random.poisson(nsci * (tgt['ntarget_badqso']) / ntgt)  
+        assert(nsci == (nqso+nqso_bad))
+    +   true_objtype += ['QSO']*nqso + ['QSO_BAD']*nqso_bad
     else:
         true_objtype += [objtype]*nsci
 
@@ -85,7 +93,7 @@ def sample_objtype(nobj,objtype):
 
     return true_objtype, target_objtype
 
-def get_targets(nspec, objtype = 'LRG', tileid=None):
+def get_targets(nspec, objtype = None, tileid=None):
     """
     Returns:
         fibermap
