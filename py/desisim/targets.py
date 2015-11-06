@@ -16,7 +16,7 @@ from desispec.io.fibermap import empty_fibermap
 
 from desisim import io
 
-def sample_objtype(nobj):
+def sample_objtype(nobj,objtype):
     """
     Return a random sampling of object types (ELG, LRG, QSO, STD, BAD_QSO)
     
@@ -38,9 +38,9 @@ def sample_objtype(nobj):
 
     #- Load target densities
     #- TODO: what about nobs_boss (BOSS-like LRGs)?
-    fx = open(os.getenv('DESIMODEL')+'/data/targets/targets.dat')
-    tgt = yaml.load(fx)
-    fx.close()
+    while open(os.getenv('DESIMODEL')+'/data/targets/targets.dat') as fx:
+        tgt = yaml.load(fx)
+        
     ntgt = float(tgt['nobs_lrg'] + tgt['nobs_elg'] + \
                  tgt['nobs_qso'] + tgt['nobs_lya'] + tgt['ntarget_badqso'])
         
@@ -59,17 +59,17 @@ def sample_objtype(nobj):
     nsci = nobj - (nsky+nstd)
     
     #- LRGs ELGs QSOs
-    nlrg = np.random.poisson(nsci * tgt['nobs_lrg'] / ntgt)
-    
     nqso = np.random.poisson(nsci * (tgt['nobs_qso'] + tgt['nobs_lya']) / ntgt)
     nqso_bad = np.random.poisson(nsci * (tgt['ntarget_badqso']) / ntgt)
-    
-    nelg = nobj - (nlrg+nqso+nqso_bad+nsky+nstd)
-    
+
+    assert(nsci == (nqso+nqso_bad)
     true_objtype  = ['SKY']*nsky + ['STD']*nstd
-    true_objtype += ['ELG']*nelg
-    true_objtype += ['LRG']*nlrg
-    true_objtype += ['QSO']*nqso + ['QSO_BAD']*nqso_bad
+    if objtype == 'QSO':
+        true_objtype += ['QSO']*nqso + ['QSO_BAD']*nqso_bad
+    else:
+        true_objtype += [objtype]*nsci
+
+    
     assert(len(true_objtype) == nobj)
     np.random.shuffle(true_objtype)
     
@@ -85,7 +85,7 @@ def sample_objtype(nobj):
 
     return true_objtype, target_objtype
 
-def get_targets(nspec, tileid=None):
+def get_targets(nspec, objtype = 'LRG', tileid=None):
     """
     Returns:
         fibermap
@@ -101,7 +101,7 @@ def get_targets(nspec, tileid=None):
         tile_ra, tile_dec = io.get_tile_radec(tileid)
     
     #- Get distribution of target types
-    true_objtype, target_objtype = sample_objtype(nspec)
+    true_objtype, target_objtype = sample_objtype(nspec,objtype)
     
     #- Get DESI wavelength coverage
     wavemin = desimodel.io.load_throughput('b').wavemin
