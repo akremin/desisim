@@ -16,8 +16,8 @@ from desispec.interpolation import resample_flux
 from targets import get_targets
 from . import io
 
-def new_exposure(flavor, nspec=5000, night=None, expid=None, tileid=None, \
-    airmass=1.0, exptime=None):
+def new_exposure(flavor, nspec=5000, object_type='LRG', night=None, expid=None, \
+    tileid=None, airmass=1.0, exptime=None):
     """
     Create a new exposure and output input simulation files.
     Does not generate pixel-level simulations or noisy spectra.
@@ -95,7 +95,7 @@ def new_exposure(flavor, nspec=5000, night=None, expid=None, tileid=None, \
             truth['PHOT_'+channel] = phot
         
     elif flavor == 'science':
-        fibermap, truth = get_targets(nspec, tileid=tileid)
+        fibermap, truth = get_targets(nspec, object_type, tileid=tileid)
             
         flux = truth['FLUX']
         wave = truth['WAVE']
